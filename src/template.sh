@@ -21,17 +21,9 @@ while true; do
     fi
 done
 
-# Title goes here
-title=""
-dir_name="project"
+cargo new project
 
-if [ $title = "project" ]; then
-    dir_name="projecto"
-fi
-
-cargo new $dir_name --name $title
-
-cd $dir_name
+cd project
 
 # Cargo.toml data goes here
 echo '' > Cargo.toml
@@ -44,12 +36,12 @@ echo '' >> int.rs
 rustc int.rs --edition "2021"
 ./int
 
-cargo build
+cargo build --release
 
 cd ..
 
-mv $dir_name/target/release/$title .
+mv project/target/release/$title .
 
-rm -r $dir_name
+rm -r project
 
 exit

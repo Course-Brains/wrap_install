@@ -29,24 +29,21 @@ fn main() {
         file.read_exact(&mut buf).unwrap();
         println!("Getting path length from bytes");
         let path_len = u32::from_be_bytes(buf);
-        println!("Path length is {path_len}\nSeeking 4 forward");
-        //file.seek(SeekFrom::Current(4)).unwrap();
+        println!("Path length is {path_len}");
 
         let mut buf = new_buf(path_len);
         println!("Reading {path_len} bytes for path");
         file.read_exact(&mut buf).unwrap();
         println!("Getting path from bytes");
         let path = String::from_utf8(buf).unwrap();
-        println!("Path is {path}\nSeeking {path_len} forward");
-        //file.seek(SeekFrom::Current(path_len as i64)).unwrap();
+        println!("Path is {path}");
 
         let mut buf: [u8; 4] = [0; 4];
         println!("Reading data length");
         file.read_exact(&mut buf).unwrap();
         println!("Getting data length from bytes");
         let data_len = u32::from_be_bytes(buf);
-        println!("Data length is {data_len}\nSeeking 4 forward");
-        //file.seek(SeekFrom::Current(4)).unwrap();
+        println!("Data length is {data_len}");
         
         let mut buf = new_buf(data_len);
         println!("Reading {data_len} bytes for data");

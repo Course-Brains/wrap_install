@@ -18,7 +18,7 @@ struct ScriptFile {
 }
 impl ScriptFile {
     fn new(path: impl AsRef<std::path::Path> + std::fmt::Debug) -> Self {
-        println!("new file({:?})", path);
+        println!("file({:?})", path);
         unsafe { FILES += 1 }
         let mut out = ScriptFile {
             header: None,
@@ -103,10 +103,25 @@ impl From<TomlSettings> for Settings {
         }
     }
 }
+impl std::fmt::Display for Settings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "optimize: {}", self.optimize)?;
+        match &self.bin_name {
+            Some(name) => writeln!(f, "bin name: {name}")?,
+            None => writeln!(f, "bin name: default")?
+        }
+        match &self.shell_name {
+            Some(name) => writeln!(f, "shell name: {name}"),
+            None => writeln!(f, "shell name: default")
+        }
+    }
+}
 fn main() {
-    let cargo = std::fs::read_to_string("Cargo.toml").unwrap();
-    let manifest: CargoManifest = toml::from_str(&cargo).unwrap();
     let settings = Settings::get("wrap_install.toml");
+    println!("Running with settings:");
+    println!("{settings}");
+    let mut cargo = std::fs::read_to_string("Cargo.toml").unwrap();
+    let manifest: CargoManifest = toml::from_str(&cargo).unwrap();
     let name = manifest.package.name;
 
     let mut shell_script = TEMPLATE.to_owned();
@@ -114,12 +129,26 @@ fn main() {
     // Insert things to the shell script starting from the back to prevent the chance
     // of false positives
 
-    // Setting whether it should be optimized
-    if settings.optimize {
-        find_insert(&mut shell_script,
-            "cargo build",
-            " --release"
-        ).unwrap();
+    // Giving the name of the bin to the shell script
+    let bin_name = match settings.bin_name {
+        Some(ref name) => name,
+        None => &name
+    };
+    find_insert(&mut shell_script, "mv project/target/release/", bin_name);
+
+    // Changes for unoptimized
+    if !settings.optimize {
+        // Replacing the directory to get the binary from (release -> debug)
+        let mut index = shell_script.find("mv $dir_name/target/").unwrap()+"mv $dir_name/target/".len();
+        for _ in 0.."release".len() {
+            shell_script.remove(index);
+        }
+        shell_script.insert_str(index, "debug");
+        // Changing cargo build --release to cargo build
+        index = shell_script.find("cargo build").unwrap()+"cargo build".len();
+        for _ in 0.." --release".len() {
+            shell_script.remove(index);
+        }
     }
     
     // Putting in the int rust
@@ -131,27 +160,21 @@ fn main() {
         &(name.to_owned()+".sh")
     ).unwrap();
 
+    if let Some(new_name) = &settings.bin_name {
+        let mut table: toml::Table = cargo.parse().unwrap();
+        if let toml::Value::Table(package) = table.get_mut("package").unwrap() {
+            if let toml::Value::String(name) = package.get_mut("name").unwrap() {
+                *name = new_name.clone()
+            }
+        }
+        cargo = toml::to_string(&table).unwrap()
+    }
+
     // Putting the cargo data in
     find_insert(&mut shell_script,
         "\n# Cargo.toml data goes here\necho \'",
         &cargo
     ).unwrap();
-
-    // Giving the name of the bin to the shell script
-    match settings.bin_name {
-        Some(bin_name) => {
-            find_insert(&mut shell_script,
-                "\n# Title goes here\ntitle=\"",
-                &bin_name
-            ).unwrap();
-        }
-        None => {
-            find_insert(&mut shell_script,
-                "\n# Title goes here\ntitle=\"",
-                &name
-            ).unwrap();
-        }
-    }
 
     // Shell script file creation
     let path_name: String;
