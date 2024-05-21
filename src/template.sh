@@ -1,4 +1,4 @@
-#! bin/bash
+#!/bin/bash
 # A template for the wrap install generated script
 
 while true; do
