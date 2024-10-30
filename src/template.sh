@@ -28,6 +28,9 @@ cd project
 # Cargo.toml data goes here
 echo '' > Cargo.toml
 
+# Cargo.lock data goes here
+echo '' > Cargo.lock
+
 # Title here too
 echo 'const TITLE: &str = "../";' > int.rs
 # Rust code here

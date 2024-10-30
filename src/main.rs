@@ -230,9 +230,10 @@ fn main() {
     }
     unsafe { MODE = settings.mode }
     quiet!("Running with settings:\n{settings}");
-    let mut cargo = std::fs::read_to_string("Cargo.toml").unwrap();
-    let manifest: CargoManifest = toml::from_str(&cargo).unwrap();
+    let mut toml = std::fs::read_to_string("Cargo.toml").unwrap();
+    let manifest: CargoManifest = toml::from_str(&toml).unwrap();
     let name = manifest.package.name;
+    let lock = std::fs::read_to_string("Cargo.lock").unwrap();
     verbose!("package name: {name}\nout directory: {:?}", settings.sh_dir);
 
     verbose!("creating shell script string");
@@ -286,23 +287,30 @@ fn main() {
     verbose!("setting bin name in cargo string");
     if let Some(new_name) = &settings.bin_name {
         verbose!("bin name changing to: {new_name}");
-        let mut table: toml::Table = cargo.parse().unwrap();
+        let mut table: toml::Table = toml.parse().unwrap();
         if let toml::Value::Table(package) = table.get_mut("package").unwrap() {
             if let toml::Value::String(name) = package.get_mut("name").unwrap() {
                 *name = new_name.clone()
             }
         }
-        cargo = toml::to_string(&table).unwrap()
+        toml = toml::to_string(&table).unwrap()
     }
     else {
         verbose!("no change needed")
     }
+    
+    // Putting the Cargo.lock data in
+    verbose!("Inserting Cargo.lock data => shell script string");
+    find_insert(&mut shell_script,
+        "\n# Cargo.lock data goes here\necho \'",
+        &lock    
+    ).unwrap();
 
-    // Putting the cargo data in
-    verbose!("inserting cargo data => shell script string");
+    // Putting the Cargo.toml data in
+    verbose!("inserting Cargo.toml data => shell script string");
     find_insert(&mut shell_script,
         "\n# Cargo.toml data goes here\necho \'",
-        &cargo
+        &toml
     ).unwrap();
 
     // Shell script file creation
