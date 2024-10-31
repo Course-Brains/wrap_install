@@ -1,0 +1,37 @@
+This has the purpose of fixing the problem that in order to have someone else run your code, you must compile it for their CPU architechture.
+It places the code of the current directory(must be inside the same directory as src, Cargo.toml, etc), it will place your code/files in src inside a shell script along with dependency information so that when run, the shell script will compile your code on their end, allowing it to always be compiled for the correct CPU architechture.
+
+arguments:
+    --normal
+        Runs the code with the default amount of printing. This is unnecessary unless you are overriding it to another mode elsewhere
+    --quiet
+        Runs the code with minimal printing.
+    --verbose
+        Rust the code with a borderline excessive amount of printing that goes into way too much detail making it mostly only useful for debuging this program itself.
+    --unoptimize
+        Makes it so that when it compiles the code on the client's computer, the code will not be compiled using the --release argument.
+    --sh-dir [path]
+        Makes it so that the resulting shell script is placed in the directory at [path]
+    --bin-name [name]
+        Makes it so that the generated binary on the client's computer will be given the name [name]
+    --shell-name [name]
+        Makes it so that the generated shell script will have the name [name]
+    help
+        Prints this text
+
+Additionally, you can use a settings file(wrap_install.toml) to have defaults for those settings.
+All the fields are optional and even the file itself is optional.
+fields:
+    optimize = [bool]
+        sets whether or not the produced binary should be optimized by the compiler
+    bin_name = [string]
+        sets the name of the produced binary
+    shell_name = [string]
+        sets the name of the produced shell script
+    mode = [verbose/quiet/normal]
+        verbose: gives a unnecessary amount of printing
+        quiet: gives a minimal amount of printing
+        normal: gives the noraml amount of printing(this is unnecessary as that is already the default)
+    sh_dir = [path]
+        sets the path to the directory the shell script will be created in.
+        Default is the same directory as this was run in(same as Cargo.toml/lock)

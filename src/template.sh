@@ -8,7 +8,7 @@ while true; do
     echo -n 'Do you have rustup? (y/n) '
     read input
     if [ $input == 'y' ]; then
-        echo 'Installing, do not interact with this directory'
+        echo 'Installing, please do not interact with this directory'
         break
     elif [ $input == 'n' ]; then
         echo 'On Unix systems(MacOS/Linux):'
@@ -17,6 +17,7 @@ while true; do
         echo 'Download: 'https://static.rust-lang.org/rustup/dist/i686-pc-windows-gnu/rustup-init.exe' then run the file'
         echo 'On success: rerun this file'
         echo "If you aren't on unix or windows, then figure it out yourself idk"
+        echo "If rust doesn't support your system then this wouldn't matter anyway because you wouldn't be able to run it even if it was pre-compiled"
         exit
     fi
 done

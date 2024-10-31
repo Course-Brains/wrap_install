@@ -1,6 +1,7 @@
 use std::io::{Seek, SeekFrom, Write};
 
 const TEMPLATE: &str = include_str!("template.sh");
+const HELP: &str = include_str!("help.txt");
 
 static mut FILES: u32 = 0;
 static mut MODE: Mode = Mode::Normal;
@@ -225,6 +226,10 @@ fn main() {
             "--sh-dir" => settings.sh_dir = Some(args.next().expect("Expected value after '--sh-dir'")),
             "--bin-name" => settings.bin_arg(args.next()),
             "--shell-name" => settings.shell_arg(args.next()),
+            "help" => {
+                println!("{HELP}");
+                return
+            },
             _ => {}
         }
     }
